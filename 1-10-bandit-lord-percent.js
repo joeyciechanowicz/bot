@@ -34,19 +34,26 @@ runSimpleBot = (positions) => {
   setInterval(() => {
     Object.keys(positions).forEach(key => {
       const poss = positions[key];
-      const x = config.offsets.topLeft.x + ((config.offsets.bottomRight.x - config.offsets.topLeft.x) * poss.x);
-      const y = config.offsets.topLeft.y + ((config.offsets.bottomRight.y - config.offsets.topLeft.y) * poss.y);
+      const x = Math.floor(config.offsets.topLeft.x + ((config.offsets.bottomRight.x - config.offsets.topLeft.x) * poss.x));
+      const y = Math.floor(config.offsets.topLeft.y + ((config.offsets.bottomRight.y - config.offsets.topLeft.y) * poss.y));
 
       const hex = robot.getPixelColor(x, y);
-      if (hex === poss.hex) {
+      if (hex === poss.hex
+        || poss.hex === robot.getPixelColor(x, y + 1)
+        || poss.hex === robot.getPixelColor(x + 1, y + 1)
+        || poss.hex === robot.getPixelColor(x + 1, y)
+        || poss.hex === robot.getPixelColor(x + 1, y - 1)
+        || poss.hex === robot.getPixelColor(x, y - 1)
+        || poss.hex === robot.getPixelColor(x - 1, y - 1)
+        || poss.hex === robot.getPixelColor(x - 1, y)
+      ) {
         robot.moveMouse(x, y);
         robot.mouseClick();
       } else {
+        // Try surrounding pixels and see if we strike lucky
         const diff = color_diff(hex, poss.hex);
         if (diff < 10) {
           console.log(`Diff: ${diff}, Key: ${key}, ${hex} == ${poss.hex}`);
-        } else {
-          console.log(`Diff: ${diff}, Key: ${key}`);
         }
       }
     });
