@@ -45,6 +45,8 @@ runSimpleBot = (positions) => {
         const diff = color_diff(hex, poss.hex);
         if (diff < 10) {
           console.log(`Diff: ${diff}, Key: ${key}, ${hex} == ${poss.hex}`);
+        } else {
+          console.log(`Diff: ${diff}, Key: ${key}`);
         }
       }
     });
