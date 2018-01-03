@@ -1,21 +1,14 @@
 const robot = require('robotjs');
-
-const topLeft = {
-  x: 170,
-	y: 188
-};
-
-const bottomRight = {
-  x: 969,
-	y: 788
-};
+const config = require('./config');
 
 const writeColor = () => {
-	const mouse = robot.getMousePos();
-	const hex = robot.getPixelColor(mouse.x, mouse.y);
-	const x = (mouse.x - topLeft.x) / (bottomRight.x - topLeft.x);
-	const y = (mouse.y - topLeft.y) / (bottomRight.y - topLeft.y);
+	try {
+    const mouse = robot.getMousePos();
+    const hex = robot.getPixelColor(mouse.x, mouse.y);
+    const x = (mouse.x - config.offsets.topLeft.x) / (config.offsets.bottomRight.x - config.offsets.topLeft.x);
+    const y = (mouse.y - config.offsets.topLeft.y) / (config.offsets.bottomRight.y - config.offsets.topLeft.y);
 
-	console.log(`${x}, ${y}, '${hex}'`);
+    console.log(`location(${x}, ${y}, '${hex}')`);
+  } catch (e) {}
 };
 setInterval(writeColor, 1000);
