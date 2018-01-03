@@ -1,13 +1,7 @@
 {
   "offsets": {
-    "topLeft": {
-      "x": 162,
-      "y": 188
-    },
-    "bottomRight": {
-      "x": 962,
-      "y": 788
-    }
+    "x": 162,
+    "y": 188
   },
   "interval": 100
 }

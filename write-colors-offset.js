@@ -5,8 +5,8 @@ const writeColor = () => {
 	try {
     const mouse = robot.getMousePos();
     const hex = robot.getPixelColor(mouse.x, mouse.y);
-    const x = mouse.x - config.offsets.topLeft.x;
-    const y = mouse.y - config.offsets.topLeft.y;
+    const x = mouse.x - config.offsets.x;
+    const y = mouse.y - config.offsets.y;
 
     console.log(`location(${x}, ${y}, '${hex}')`);
   } catch (e) {}

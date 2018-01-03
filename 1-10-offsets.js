@@ -7,8 +7,8 @@ runSimpleBot = (positions) => {
   setInterval(() => {
     Object.keys(positions).forEach(key => {
       const poss = positions[key];
-      const x = config.offsets.topLeft.x + poss.x;
-      const y = config.offsets.topLeft.y + poss.y;
+      const x = config.offsets.x + poss.x;
+      const y = config.offsets.y + poss.y;
 
       const hex = robot.getPixelColor(x, y);
       if (hex === poss.hex) {
@@ -29,12 +29,13 @@ const location = (x, y, hex) => {
 };
 
 const positions = {
-  banditLord: location(0.8625, 0.52, 'ffffff'),
-  difficulty: location(0.7675, 0.42333333333333334, '2c94e5'),
-  toBattle: location(0.5775, 0.8, 'ffffff'),
-  proceedWithoutParty: location(0.60375, 0.5766666666666667, '2c94e5'),
-  useAbility: location(0.51625, 0.8766666666666667, '98df28'),
-  acceptLoot: location(0.545, 0.9216666666666666, 'd54e1f'),
+  banditLord: location(688, 307, 'ffffff'),
+  difficulty: location(618, 256, '0091e6'),
+  toBattle: location(463, 481, 'ffffff'),
+  proceedWithoutParty: location(497, 349, '0091e6'),
+  useAbility: location(413, 535, 'a7ee10'),
+  useAbility2: location(381, 547, '8fc800'),
+  acceptLoot: location(440, 551, 'dc4e10'),
   // dailyReward: asdfasdfsadf,
   // closePopup: asdfasdfsadf,
   // closeNewsPopup: asdfasdfsadf,
