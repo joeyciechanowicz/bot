@@ -42,7 +42,10 @@ runSimpleBot = (positions) => {
         robot.moveMouse(x, y);
         robot.mouseClick();
       } else {
-        console.log(`diff: ${color_diff(hex, poss.hex)}`);
+        const diff = color_diff(hex, poss.hex);
+        if (diff < 10) {
+          console.log(`Diff: ${diff}, Key: ${key}`);
+        }
       }
     });
   }, config.interval);
