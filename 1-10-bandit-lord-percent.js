@@ -21,11 +21,11 @@ function color_diff(colorA, colorB) {
 
   const perc1 = Math.round((p1 + p2 + p3) / 3);
 
-  const p1 = (__r / 255) * 100;
-  const p2 = (__g / 255) * 100;
-  const p3 = (__b / 255) * 100;
+  const _p1 = (__r / 255) * 100;
+  const _p2 = (__g / 255) * 100;
+  const _p3 = (__b / 255) * 100;
 
-  const perc2 = Math.round((p1 + p2 + p3) / 3);
+  const perc2 = Math.round((_p1 + _p2 + _p3) / 3);
 
   return Math.abs(perc1 - perc2);
 }
