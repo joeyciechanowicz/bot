@@ -1,4 +1,5 @@
 const robot = require("robotjs");
+const config = require('../config');
 
 // Helper func to ensure we always create a step object the same way
 const stepDesc = (stepName, arg, action) => ({
@@ -6,24 +7,6 @@ const stepDesc = (stepName, arg, action) => ({
   arg: arg,
   action: action
 });
-
-module.exports.Offsets = class Offsets {
-  constructor(topLeftX, topLeftY, bottomRightX, bottomRightY) {
-    this.topLeftX = topLeftX;
-    this.topLeftY = topLeftY;
-    this.bottomRightX = bottomRightX;
-    this.bottomRightY = bottomRightY;
-  }
-
-  translateX(x) {
-    return Math.floor(this.topleftX + (x * (this.bottomRightX - this.topLeftX)));
-  }
-
-  translateY(y) {
-    return Math.floor(this.topLeftY + (y * (this.bottomRightY - this.topLeftY)));
-  }
-}
-
 
 // These are all technically actions. They all return a
 module.exports.Repeat = function (action) {
@@ -188,9 +171,9 @@ class Condition extends Tickable {
   }
 
   true(offset, arg, eventBus) {
-    const translatedX = offset.translateX(this.x);
-    const translatedY = offset.translateY(this.y);
-    const hex = robot.getPixelColor(translatedX, translatedY);
+    const x = config.offsets.x + this.x;
+    const y = config.offsets.y + this.y;
+    const hex = robot.getPixelColor(x, y);
 
     if (hex === this.hex) {
       this.emit(arg, eventBus);

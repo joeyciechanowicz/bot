@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "supervisor 1-10-bandit-lord.js"
+    "start": "supervisor 1-10-offsets.js"
   },
   "author": "",
   "license": "ISC",

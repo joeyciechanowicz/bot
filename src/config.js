@@ -1,7 +1,6 @@
-const {Bot, Offsets, Repeat, AnyOf, Action, Condition, ActionSeries, BlockingAction} = require('./bot');
+const {Bot, Repeat, AnyOf, Action, Condition, ActionSeries, BlockingAction} = require('./bot');
 
 const bot = new Bot({
-    offsets: new Offsets(170, 188, 50, 50),
     interval: 100, //ms
   })
   .step( // Run with an argument. When an event is raised it will have %s replaced with the argument
