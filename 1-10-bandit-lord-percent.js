@@ -3,51 +3,17 @@
 const robot = require("robotjs");
 const config = require('./config');
 
-function color_diff(colorA, colorB) {
-
-  if (!colorA && !colorB) return;
-
-  const _r = parseInt(colorA.substring(0,2), 16);
-  const _g = parseInt(colorA.substring(2,4), 16);
-  const _b = parseInt(colorA.substring(4,6), 16);
-
-  const __r = parseInt(colorB.substring(0,2), 16);
-  const __g = parseInt(colorB.substring(2,4), 16);
-  const __b = parseInt(colorB.substring(4,6), 16);
-
-  const p1 = (_r / 255) * 100;
-  const p2 = (_g / 255) * 100;
-  const p3 = (_b / 255) * 100;
-
-  const perc1 = (p1 + p2 + p3) / 3;
-
-  const _p1 = (__r / 255) * 100;
-  const _p2 = (__g / 255) * 100;
-  const _p3 = (__b / 255) * 100;
-
-  const perc2 = (_p1 + _p2 + _p3) / 3;
-
-  return Math.abs(perc1 - perc2);
-}
-
 runSimpleBot = (positions) => {
   setInterval(() => {
     Object.keys(positions).forEach(key => {
       const poss = positions[key];
-      const x = Math.floor(config.offsets.topLeft.x + ((config.offsets.bottomRight.x - config.offsets.topLeft.x) * poss.x));
-      const y = Math.floor(config.offsets.topLeft.y + ((config.offsets.bottomRight.y - config.offsets.topLeft.y) * poss.y));
+      const x = config.offsets.topLeft.x + poss.x;
+      const y = config.offsets.topLeft.y + poss.y;
 
       const hex = robot.getPixelColor(x, y);
       if (hex === poss.hex) {
         robot.moveMouse(x, y);
         robot.mouseClick();
-      } else {
-        const diff = color_diff(hex, poss.hex);
-        if (diff < 7) {
-          console.log(`Diff: ${diff}, Key: ${key}, ${hex} == ${poss.hex}`);
-          robot.moveMouse(x, y);
-          robot.mouseClick();
-        }
       }
     });
   }, config.interval);
