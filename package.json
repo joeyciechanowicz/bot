@@ -1,0 +1,17 @@
+{
+  "name": "bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "supervisor 1-10-bandit-lord.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "robotjs": "^0.4.7"
+  },
+  "devDependencies": {
+    "supervisor": "^0.12.0"
+  }
+}
