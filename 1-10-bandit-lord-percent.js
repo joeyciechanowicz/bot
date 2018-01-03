@@ -38,22 +38,15 @@ runSimpleBot = (positions) => {
       const y = Math.floor(config.offsets.topLeft.y + ((config.offsets.bottomRight.y - config.offsets.topLeft.y) * poss.y));
 
       const hex = robot.getPixelColor(x, y);
-      if (hex === poss.hex
-        || poss.hex === robot.getPixelColor(x, y + 1)
-        || poss.hex === robot.getPixelColor(x + 1, y + 1)
-        || poss.hex === robot.getPixelColor(x + 1, y)
-        || poss.hex === robot.getPixelColor(x + 1, y - 1)
-        || poss.hex === robot.getPixelColor(x, y - 1)
-        || poss.hex === robot.getPixelColor(x - 1, y - 1)
-        || poss.hex === robot.getPixelColor(x - 1, y)
-      ) {
+      if (hex === poss.hex) {
         robot.moveMouse(x, y);
         robot.mouseClick();
       } else {
-        // Try surrounding pixels and see if we strike lucky
         const diff = color_diff(hex, poss.hex);
-        if (diff < 10) {
+        if (diff < 7) {
           console.log(`Diff: ${diff}, Key: ${key}, ${hex} == ${poss.hex}`);
+          robot.moveMouse(x, y);
+          robot.mouseClick();
         }
       }
     });
