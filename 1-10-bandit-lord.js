@@ -1,6 +1,22 @@
 // press down four times
 
-const bot = require('./bot');
+const robot = require("robotjs");
+
+runSimpleBot = (positions) => {
+  setInterval(() => {
+    Object.keys(positions).forEach(key => {
+      const poss = positions[key];
+      const x = poss.x;
+      const y = poss.y;
+
+      const hex = robot.getPixelColor(x, y);
+      if (hex === poss.hex) {
+        robot.moveMouse(x, y);
+        robot.mouseClick();
+      }
+    });
+  }, 100);
+};
 
 //#fbcd29 at x:625 y:661
 const positions = {
@@ -68,5 +84,5 @@ const positions = {
 
 // e82e2b at x:268 y:218
 
-bot.runSimpleBot(positions);
+runSimpleBot(positions);
 

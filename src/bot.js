@@ -2,14 +2,13 @@ const robot = require("robotjs");
 const config = require('../config');
 
 // Helper func to ensure we always create a step object the same way
-const stepDesc = (stepName, arg, action) => ({
+const stepDesc = (stepName, arg) => ({
   stepName: stepName,
-  arg: arg,
-  action: action
+  arg: arg
 });
 
 // These are all technically actions. They all return a
-module.exports.Repeat = function (action) {
+module.exports.Repeat = function (...action) {
   return new Repeat(action);
 };
 module.exports.AnyOf = function (...actions) {
@@ -29,43 +28,38 @@ module.exports.BlockingAction = function (x, y, hex) {
 };
 
 class Tickable {
+  constructor() {
+  }
+
   tick() {
     throw new Error('Not implemented');
   }
 
   reset() {
   }
-}
 
-
-class Raisable extends Tickable {
-  raise(eventName) {
-    this._eventName = eventName;
+  emit(eventName, bot) {
+    bot.eventBus.emit(eventName.replace('%s', bot.currentStep.arg));
   }
 
-  emit(arg, eventBus) {
-    if (this._eventName) {
-      eventBus.emit(this.eventName.replace('%s', arg));
+  debug(callback) {
+    this.debugCallback = callback;
+    return this;
+  }
+
+  _runDebugCallback(obj) {
+    if (this.debugCallback) {
+      this.debugCallback(obj);
     }
   }
-
-  get eventName() {
-    return this._eventName;
-  }
 }
 
-class Blockable extends Raisable {
-  constructor() {
+class Blockable extends Tickable {
+  constructor(x, y, hex) {
     super();
-    this._shouldProgress = false;
-  }
-
-  get shouldProgress() {
-    return this._shouldProgress;
-  }
-
-  set shouldProgress(value) {
-    this._shouldProgress = value;
+    this.x = x;
+    this.y = y;
+    this.hex = hex;
   }
 }
 
@@ -77,12 +71,13 @@ class ActionSeries extends Blockable {
     this.index = 0;
   }
 
-  tick(offsets, arg, eventBus) {
+  tick(bot) {
+    this._runDebugCallback(this);
     const action = this.actions[this.index];
-    action.tick(offsets, arg, eventBus);
+    const result = action.tick(bot);
 
     if (action instanceof Blockable) {
-      if (action.shouldProgress) {
+      if (result) {
         this.index++;
       }
     } else {
@@ -90,8 +85,9 @@ class ActionSeries extends Blockable {
     }
 
     if (this.index >= this.actions.length) {
-      this.shouldProgress = true;
+      return true;
     }
+    return false;
   }
 
   reset() {
@@ -107,9 +103,10 @@ class AnyOf extends Tickable {
     this.actions = actions;
   }
 
-  tick(offsets, arg, eventBus) {
+  tick(bot) {
+    this._runDebugCallback(this);
     this.actions.forEach(action => {
-      if (action.tick(offsets, arg, eventBus)) {
+      if (action.tick(bot)) {
         return true;
       }
     });
@@ -122,10 +119,17 @@ class Repeat extends Blockable {
     super();
     this.actions = actions;
     this.index = 0;
+
+    actions.forEach(x => {
+      if (x.hex === null) {
+        throw new Error(' hex checks not allowed within a repeat block');
+      }
+    })
   }
 
   until(condition) {
     this.condition = condition;
+    return this;
   }
 
   reset() {
@@ -133,15 +137,16 @@ class Repeat extends Blockable {
     this.actions.forEach(x => x.reset());
   }
 
-  tick(offsets, arg, eventBus) {
+  tick(bot) {
+    this._runDebugCallback(this);
     const action = this.actions[this.index];
+    const result = action.tick(bot);
+
     if (action instanceof Blockable) {
-      action.tick(offsets, arg, eventBus);
-      if (action.shouldProgress) {
+      if (result) {
         this.index++;
       }
     } else {
-      action.tick(offsets, arg, eventBus);
       this.index++;
     }
 
@@ -149,8 +154,7 @@ class Repeat extends Blockable {
       this.index = 0;
     }
 
-    if (this.condition.true(offsets, arg, eventBus)) {
-      this.shouldProgress = true;
+    if (this.condition.tick(bot)) {
       return true;
     }
     return false;
@@ -165,25 +169,31 @@ class Condition extends Tickable {
     this.hex = hex;
   }
 
-  raise(eventName) {
-    this.eventName = eventName;
+  true(eventName) {
+    this.trueEventName = eventName;
     return this;
   }
 
-  true(offset, arg, eventBus) {
+  false(eventName) {
+    this.falseEventName = eventName;
+    return this;
+  }
+
+  tick(bot) {
+    this._runDebugCallback(this);
     const x = config.offsets.x + this.x;
     const y = config.offsets.y + this.y;
     const hex = robot.getPixelColor(x, y);
 
     if (hex === this.hex) {
-      this.emit(arg, eventBus);
+      if (this.trueEventName) {
+        this.emit(this.trueEventName, bot)
+      }
       return true;
+    } else if (this.falseEventName) {
+      this.emit(this.falseEventName, bot)
     }
     return false;
-  }
-
-  tick(offset, arg, eventBus) {
-    return this.true(offset, arg, eventBus);
   }
 }
 
@@ -192,23 +202,28 @@ class BlockingAction extends Blockable {
     super(x, y, hex);
   }
 
-  tick(offset, arg, eventBus) {
-    const translatedX = offset.translateX(this.x);
-    const translatedY = offset.translateY(this.y);
-    const hex = robot.getPixelColor(translatedX, translatedY);
-    if (hex === this.hex || this.hex == null) {
-      robot.moveMouse(translatedX, translatedY);
+  thenRaise(eventName) {
+    this.eventName = eventName;
+  }
+
+  tick(bot) {
+    this._runDebugCallback(this);
+    const x = config.offsets.x + this.x;
+    const y = config.offsets.y + this.y;
+    const hex = robot.getPixelColor(x, y);
+    if (hex === this.hex) {
+      robot.moveMouse(x, y);
       robot.mouseClick();
-      this.emit(arg, eventBus);
-      this.shouldProgress = true;
+      if (this.eventName) {
+        this.emit(this.eventName, bot);
+      }
       return true;
     }
-    this.shouldProgress = false;
     return false;
   }
 }
 
-class Action extends Raisable {
+class Action extends Tickable {
   constructor(x, y, hex) {
     super();
     this.x = x;
@@ -216,14 +231,14 @@ class Action extends Raisable {
     this.hex = hex;
   }
 
-  tick(offset, arg, eventBus) {
-    const translatedX = offset.translateX(this.x);
-    const translatedY = offset.translateY(this.y);
-    const hex = robot.getPixelColor(translatedX, translatedY);
-    if (hex === this.hex || this.hex == null) {
-      robot.moveMouse(translatedX, translatedY);
+  tick(bot) {
+    this._runDebugCallback(this);
+    const x = config.offsets.x + this.x;
+    const y = config.offsets.y + this.y;
+    const hex = robot.getPixelColor(x, y);
+    if (hex === this.hex || this.hex === null) {
+      robot.moveMouse(x, y);
       robot.mouseClick();
-      this.emit(arg, eventBus);
     }
     return true;
   }
@@ -251,35 +266,32 @@ class EventBus {
 }
 
 module.exports.Bot = class Bot {
-  constructor(config) {
-    if (!config.offsets || !config.interval) {
-      throw new Error('Requires offsets and interval');
-    }
-    this.offsets = config.offsets;
-    this.interval = config.interval;
+  constructor() {
+    this._currentStep = null;
+    this._steps = {};
 
-    this.currentStep = null;
-    this.steps = {};
-    this.args = {};
-    this.eventBus = new EventBus((stepName) => {
-      if (this.steps[stepName]) {
-        this.currentStep = stepDesc(stepName, this.args[stepName], this.steps[stepName]);
-        this.currentStep.action.reset();
+    this._eventBus = new EventBus((stepName, arg) => {
+      this._currentStep = stepDesc(stepName, arg);
+
+      if (!this._steps[stepName]) {
+        throw new Error(`Unknown step: ${stepName}`)
       }
+
+      this._steps[stepName].reset();
+      console.log(`Running step ${this._currentStep.stepName}`);
     });
   }
 
   step(name, action) {
-    if (this.steps[name]) {
+    if (this._steps[name]) {
       throw new Error(`Duplicate step: ${name}`);
     }
-    this.steps[name] = action;
+    this._steps[name] = action;
     return this;
   }
 
   on(event, stepName, arg = null) {
-    this.args[stepName] = arg;
-    this.eventBus.add(event, stepName, arg);
+    this._eventBus.add(event, stepName, arg);
     return this;
   }
 
@@ -289,18 +301,29 @@ module.exports.Bot = class Bot {
   }
 
   start(stepName, arg) {
-    this.currentStep = stepDesc(stepName, arg);
-    setInterval(this._tick.bind(this), this.interval);
+    this._currentStep = stepDesc(stepName, arg);
+    this.intervalId = setInterval(this._tick.bind(this), config.interval);
   }
 
   _tick() {
-    console.log(JSON.stringify(this.steps));
-    if (!this.steps[this.currentStep.stepName]) {
-      throw new Error(`Invalid step: ${this.currentStep.stepName}`);
+    if (!this._steps[this._currentStep.stepName]) {
+      throw new Error(`Invalid step: ${this._currentStep.stepName}`);
     }
 
-    console.clear();
-    console.log(`Running step ${this.currentStep.stepName}`);
-    this.steps[this.currentStep.stepName].tick(this.offsets, this.currentStep.stepName.arg, this.eventBus);
+    try {
+      this._steps[this._currentStep.stepName].tick(this);
+    } catch (e) {
+      console.error(`Error thrown when trying to perform step "${this._currentStep.stepName}:${this._currentStep.arg}"`);
+      console.error(e);
+      clearInterval(this.intervalId);
+    }
+  }
+
+  get currentStep() {
+    return this._currentStep;
+  }
+
+  get eventBus() {
+    return this._eventBus;
   }
 }
