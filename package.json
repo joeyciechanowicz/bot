@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "supervisor 1-10-bandit-lord.js"
+    "start": "supervisor 1-10-bandit-lord.js",
+    "cata": "supervisor catacombs.js"
   },
   "author": "",
   "license": "ISC",

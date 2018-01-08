@@ -1,13 +1,14 @@
 // press down four times
 
 const robot = require("robotjs");
+const config = require('./config');
 
 runSimpleBot = (positions) => {
   setInterval(() => {
     Object.keys(positions).forEach(key => {
       const poss = positions[key];
-      const x = poss.x;
-      const y = poss.y;
+      const x = poss.x + config.offsets.x;
+      const y = poss.y + config.offsets.y;
 
       const hex = robot.getPixelColor(x, y);
       if (hex === poss.hex) {
@@ -18,71 +19,18 @@ runSimpleBot = (positions) => {
   }, 100);
 };
 
-//#fbcd29 at x:625 y:661
-const positions = {
-	banditLord: {
-		x: 858,
-		y: 497,
-		hex: 'ffffff'
-	},
-  difficulty: {
-    x: 765,
-    y: 445,
-    hex: '2c94e5'
-  },
-  toBattle: {
-    x: 621,
-    y: 667,
-    hex: 'ffffff'
-  },
-  proceedWithoutParty: {
-    x: 662,
-    y: 533,
-    hex: '2c94e5'
-  },
-  useAbility: {
-    x: 550,
-    y: 736,
-    hex: '8fc11e'
-  },
-  useAbilityFromDiffPoss: {
-    x: 584,
-    y: 716,
-    hex: '9de62a'
-  },
-  acceptLoot: {
-    x: 618,
-    y: 737,
-    hex: 'd54e1f'
-  },
-  dailyReward: {
-    x: 625,
-    y: 661,
-    hex: 'fbcd29'
-  },
-  closePopup: {
-    x: 218,
-    y: 294,
-    hex: 'ea2d2b'
-  },
-  closeNewsPopup: {
-    x: 268,
-    y: 218,
-    hex: 'e82e2b'
-  },
-  acceptStones: {
-    x: 721,
-    y: 456,
-    hex: 'd83134'
-  },
-  acceptStones2: {
-    x: 567,
-    y: 330,
-    hex: '7d7e7d'
-  },
-};
+const location = (x, y, hex) => ({x:x, y:y, hex:hex});
 
-// e82e2b at x:268 y:218
+const positions = {
+    banditLord: location(689, 308, 'ffffff'),
+    extreme: location(664, 261, '2c94e5'),
+    toBattle: location(461, 480, 'ffffff'),
+    withoutParty: location(496, 350, '2c94e5'),
+    useAbility: location(392, 554, 'ffffff'),
+    acceptLoot: location(439, 555, 'd54e1f'),
+    collectDailyReward: location(453, 476, 'fbcd29'),
+    moveOnDailyReward: location(521, 262, 'd83134')
+};
 
 runSimpleBot(positions);
 

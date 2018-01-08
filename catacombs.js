@@ -19,53 +19,23 @@ runSimpleBot = (positions) => {
   }, config.interval);
 };
 
+const location = (x, y, hex) => {
+  return {
+    x: x,
+    y: y,
+    hex: hex
+  };
+};
+
 //#fbcd29 at x:625 y:661
 const positions = {
-	banditLord: {
-		x: 687,
-		y: 304,
-		hex: 'ffffff'
-	},
-  difficulty: {
-    x: 630,
-    y: 254,
-    hex: '1894e4'
-  },
-  toBattle: {
-    x: 461,
-    y: 483,
-    hex: 'ffffff'
-  },
-  proceedWithoutParty: {
-    x: 498,
-    y: 351,
-    hex: '1894e4'
-  },
-  useAbility: {
-    x: 414,
-    y: 533,
-    hex: 'a6e631'
-  },
-  acceptLoot: {
-    x: 426,
-    y: 552,
-    hex: 'da4f21'
-  },
-  dailyReward: {
-    x: 625,
-    y: 661,
-    hex: 'fbcd29'
-  },
-  closePopup: {
-    x: 218,
-    y: 294,
-    hex: 'ea2d2b'
-  },
-  closeNewsPopup: {
-    x: 268,
-    y: 218,
-    hex: 'e82e2b'
-  }
+  // enter: location(727, 466, '5fd520'),
+  // toBattle: location(479, 465, '5fd520'),
+  // enterWithoutFullParty: location(489, 348, '2c94e5'),
+  ability1: location(453, 559, '70a217'),
+  ability2: location(380, 540, 'a1db24'),
+  acceptLoot: location(440, 552, 'd54e1f'),
+
 };
 
 // e82e2b at x:268 y:218
