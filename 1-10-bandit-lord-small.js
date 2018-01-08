@@ -1,4 +1,5 @@
-// press down four times
+// press down three times
+// 1152 x 786
 
 const robot = require("robotjs");
 const config = require("./config");
@@ -19,56 +20,16 @@ runSimpleBot = (positions) => {
   }, config.interval);
 };
 
-//#fbcd29 at x:625 y:661
-const positions = {
-	banditLord: {
-		x: 687,
-		y: 304,
-		hex: 'ffffff'
-	},
-  difficulty: {
-    x: 630,
-    y: 254,
-    hex: '1894e4'
-  },
-  toBattle: {
-    x: 461,
-    y: 483,
-    hex: 'ffffff'
-  },
-  proceedWithoutParty: {
-    x: 498,
-    y: 351,
-    hex: '1894e4'
-  },
-  useAbility: {
-    x: 414,
-    y: 533,
-    hex: 'a6e631'
-  },
-  acceptLoot: {
-    x: 426,
-    y: 552,
-    hex: 'da4f21'
-  },
-  dailyReward: {
-    x: 625,
-    y: 661,
-    hex: 'fbcd29'
-  },
-  closePopup: {
-    x: 218,
-    y: 294,
-    hex: 'ea2d2b'
-  },
-  closeNewsPopup: {
-    x: 268,
-    y: 218,
-    hex: 'e82e2b'
-  }
-};
+const location = (x, y, hex) => ({x: x, y: y, hex: hex});
 
-// e82e2b at x:268 y:218
+const positions = {
+  banditLord: location(686, 309, 'ffffff'),
+  extreme: location(659, 262, '0091e6'),
+  toBattle: location(460, 483, 'ffffff'),
+  withoutParty: location(502, 351, '0091e6'),
+  ability: location(393, 557, 'ffffff'),
+  loot: location(432, 552, 'dc4e10')
+};
 
 runSimpleBot(positions);
 
