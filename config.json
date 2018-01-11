@@ -3,5 +3,7 @@
     "x": 21,
     "y": 188
   },
-  "interval": 100
+  "interval": 200,
+  "debug": true,
+  "maxIterations": 300
 }
