@@ -45,6 +45,9 @@ module.exports.If = function (condition) {
 module.exports.Not = function (condition) {
   return new Not(condition);
 };
+module.exports.TickCounter = function(ticks) {
+  return new TickCounter(ticks);
+};
 
 class Tickable {
 
@@ -121,6 +124,10 @@ class AnyOf extends Tickable {
     this.actions = actions;
   }
 
+  reset() {
+    this.actions.forEach(x => x.reset());
+  }
+
   true(eventName) {
     if (!eventName || eventName.length == 0) {
       throw new Error('Event name is not allowed to be empty');
@@ -170,13 +177,17 @@ class Repeat extends Blockable {
   }
 
   until(condition) {
-    this.condition = condition;
+    this._condition = condition;
     return this;
   }
 
   reset() {
     this.index = 0;
     this.actions.forEach(x => x.reset());
+
+    if (this._condition) {
+      this._condition.reset();
+    }
   }
 
   tick(bot) {
@@ -196,7 +207,7 @@ class Repeat extends Blockable {
       this.index = 0;
     }
 
-    if (this.condition.tick(bot)) {
+    if (this._condition && this._condition.tick(bot)) {
       return true;
     }
     return false;
@@ -263,6 +274,13 @@ class If extends Tickable {
     this._condition = condition;
   }
 
+  reset() {
+    this._condition.reset();
+    if (this._then) {
+      this._then.reset();
+    }
+  }
+
   then(action) {
     if (!action || !action.tick) {
       throw new Error('Must pass an action to If.then');
@@ -276,7 +294,7 @@ class If extends Tickable {
     this._runDebugCallback(this);
 
     if (this._condition.tick(bot)) {
-      this._then.tick(bot);
+      return this._then.tick(bot);
     }
 
     return true;
@@ -293,31 +311,8 @@ class Not extends Tickable {
     this._condition = condition;
   }
 
-  tick(bot) {
-    this._runDebugCallback(this);
-
-    if (this._condition.tick(bot)) {
-      return false
-    }
-
-    return true;
-  }
-}
-
-class WaitingCondition extends Blockable {
-
-  constructor(x, y, hex) {
-    super();
-    if (x.x) {
-      this.x = x.x;
-      this.y = x.y;
-      this.hex = x.hex;
-    } else {
-      this.x = x;
-      this.y = y;
-      this.hex = hex;
-    }
-    this._waitedCount = 0;
+  reset() {
+    this._condition.reset();
   }
 
   true(eventName) {
@@ -338,35 +333,21 @@ class WaitingCondition extends Blockable {
     return this;
   }
 
-  waitFor(ticks) {
-    this._ticks = ticks;
-    return this;
-  }
-
   tick(bot) {
     this._runDebugCallback(this);
-    const x = config.offsets.x + this.x;
-    const y = config.offsets.y + this.y;
-    const hex = robot.getPixelColor(x, y);
 
-    if (hex === this.hex) {
-      if (this._trueEventName) {
-        this.emit(this._trueEventName, bot)
-      }
-      return true;
-    }
+    if (this._condition.tick(bot)) {
 
-    this._waitedCount++;
-
-    if (this._waitedCount >= this._ticks) {
       if (this._falseEventName) {
-        this.emit(this._falseEventName, bot)
+        this.emit(this._falseEventName, bot);
       }
-
-      return true;
+      return false
     }
 
-    return false;
+    if (this._trueEventName) {
+      this.emit(this._trueEventName, bot);
+    }
+    return true;
   }
 }
 
@@ -374,6 +355,10 @@ class AllOf extends Tickable {
   constructor(conditions) {
     super();
     this._conditions = conditions;
+  }
+
+  reset() {
+    this._conditions.forEach(x => x.reset());
   }
 
   true(eventName) {
@@ -434,7 +419,7 @@ class BlockingAction extends Blockable {
       throw new Error('Event name is not allowed to be empty');
     }
 
-    this.eventName = eventName;
+    this._eventName = eventName;
     return this;
   }
 
@@ -446,8 +431,8 @@ class BlockingAction extends Blockable {
     if (hex === this.hex) {
       robot.moveMouse(x, y);
       robot.mouseClick();
-      if (this.eventName) {
-        this.emit(this.eventName, bot);
+      if (this._eventName) {
+        this.emit(this._eventName, bot);
       }
       return true;
     }
@@ -486,7 +471,6 @@ class BlockingCondition extends Blockable {
     const hex = robot.getPixelColor(x, y);
 
     if (hex === this.hex) {
-      console.log(`Blocking condition met, emitting: ${this._trueEventName}`);
       if (this._trueEventName) {
         this.emit(this._trueEventName, bot)
       }
@@ -515,6 +499,11 @@ class Action extends Tickable {
     this._runDebugCallback(this);
     const x = config.offsets.x + this.x;
     const y = config.offsets.y + this.y;
+
+    if (this.x === 361) {
+      const g = 123;
+    }
+
     const hex = robot.getPixelColor(x, y);
     if (hex === this.hex || this.hex === null) {
       robot.moveMouse(x, y);
@@ -538,6 +527,42 @@ class Action extends Tickable {
   }
 }
 
+class TickCounter extends Blockable {
+  constructor(ticks) {
+    super();
+    this._ticks = ticks;
+    this._tickCount = 0;
+  }
+
+  reset() {
+    this._tickCount = 0;
+  }
+
+  thenRaise(eventName) {
+    if (!eventName || eventName.length == 0) {
+      throw new Error('Event name is not allowed to be empty');
+    }
+
+    this._eventName = eventName;
+    return this;
+  }
+
+  tick(bot) {
+    this._runDebugCallback(this);
+
+    this._tickCount++;
+
+    if (this._tickCount >= this._ticks) {
+      if (this._eventName) {
+        this.emit(this._eventName, bot);
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+}
 
 class EventBus {
   constructor(stepChangeCb) {
@@ -558,6 +583,8 @@ class EventBus {
     }
     if (this.eventToStep[event]) {
       this.stepChangeCb(this.eventToStep[event]);
+    } else {
+      throw new Error(`Event ${event} raised, but no handler is defined`);
     }
   }
 }
@@ -613,6 +640,15 @@ module.exports.Bot = class Bot {
     return this;
   }
 
+  everyTick(everyTickAction) {
+    if (!everyTickAction || !everyTickAction.tick) {
+      throw new Error('Action passed to everyTick is not an action');
+    }
+
+    this._everyTickAction = everyTickAction;
+    return this;
+  }
+
   start(stepName, arg) {
     this._iterations = 0;
 
@@ -621,6 +657,10 @@ module.exports.Bot = class Bot {
   }
 
   _tick() {
+    if (this._everyTickAction) {
+      this._everyTickAction.tick(this);
+    }
+
     if (!this._steps[this._currentStep.stepName]) {
       console.error(`Step not found: ${this._currentStep.stepName}`);
       clearInterval(this.intervalId);
@@ -642,9 +682,14 @@ module.exports.Bot = class Bot {
     } catch (e) {
       console.error(`Error thrown when trying to perform step "${this._currentStep.stepName}:${this._currentStep.arg}"`);
       console.error(e);
-      this._currentStep = this.onFailure;
-      console.warn(`Switching to failure step: ${this._currentStep.stepName}:${this._currentStep.arg}`)
-      this._steps[this._currentStep.stepName].reset();
+
+      if (config.debug) {
+        clearInterval(this.intervalId);
+      } else {
+        this._currentStep = this.onFailure;
+        console.warn(`Switching to failure step: ${this._currentStep.stepName}:${this._currentStep.arg}`)
+        this._steps[this._currentStep.stepName].reset();
+      }
     }
   }
 

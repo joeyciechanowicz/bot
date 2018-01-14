@@ -1,7 +1,7 @@
 // press down four times
 
 const robot = require("robotjs");
-const config = require("./config");
+const config = require('./config');
 
 runSimpleBot = (positions) => {
   setInterval(() => {
@@ -16,29 +16,16 @@ runSimpleBot = (positions) => {
         robot.mouseClick();
       }
     });
-  }, config.interval);
+  }, 100);
 };
 
-const location = (x, y, hex) => {
-  return {
-    x: x,
-    y: y,
-    hex: hex
-  };
-};
+const location = (x, y, hex) => ({x:x, y:y, hex:hex});
 
-//#fbcd29 at x:625 y:661
 const positions = {
-  // enter: location(727, 466, '5fd520'),
-  // toBattle: location(479, 465, '5fd520'),
-  // enterWithoutFullParty: location(489, 348, '2c94e5'),
-  ability1: location(453, 559, '70a217'),
-  ability2: location(380, 540, 'a1db24'),
-  acceptLoot: location(440, 552, 'd54e1f'),
+  1:location(478, 456, '734a11'),
+  2: location(370, 459, '734a11'),
+  3: location(265, 455, '734a11'),
 
 };
-
-// e82e2b at x:268 y:218
 
 runSimpleBot(positions);
-
