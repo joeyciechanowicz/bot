@@ -12,6 +12,7 @@ const locations = {
   acceptLoot: location(434, 549, 'd54e1f'),
   keeperLevelUp: location(478, 413, 'd83134'),
   closeYourTowerHasBeenAttacked: location(22, 152, 'ffffff'),
+  anErrorHasOccured: location(424, 351, '2c94e5')
 };
 
 const pvpLocations = {

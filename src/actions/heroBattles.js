@@ -62,12 +62,14 @@ const guildHungers = ActionSeries(
 )
 
 const spellSword = location(290, 557, 'ffffff');
-const ninja = location(375, 566, 'ffffff');
+const ninjaCentre = location(375, 566, 'ffffff');
 const druid = location(511, 565, 'ffffff');
 const bgTank = location(440, 547, 'ffffff');
 const bgDps = location(291, 546, 'ffffff');
 const monkTank = location(433, 554, 'ffffff');
 const thief = location(366, 562, 'ffffff');
+const mysticBottom = location(510, 540, 'ffffff');
+const barbarianTop = location(297, 553, 'fffffe');
 
 const knight = location(438, 543, 'f3f1e7');
 const shaman = location(291, 562, 'ffffff');
@@ -77,13 +79,14 @@ const theirEmptyWinFirstRound = location(458, 50, '26272c');
 
 const runPvpSetup1 = ActionSeries(
   BlockingAction(heroBattleLocations.wizardsEstimatedRewards),
+  BlockingAction(mysticBottom),
   Repeat(
     AnyOf(
       Action(knight),
       Action(druid),
-      Action(spellSword),
-      Action(bgDps),
-      Action(monkTank),
+      Action(barbarianTop),
+      Action(ninjaCentre),
+      Action(bgTank),
       Action(thief),
       Action(shaman),
       Action(common.locations.acceptLoot),
